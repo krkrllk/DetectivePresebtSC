@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grammar Detective Agency: True Crime Division</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Courier+Prime&family=Pinyon+Script&family=Special+Elite&family=Staatliches&display=swap" rel="stylesheet">
+
+    <style>
+        /* Custom Font Classes matching the React version */
+        .font-typewriter { font-family: 'Special Elite', 'Courier New', monospace; }
+        .font-header { font-family: 'Black Ops One', cursive; }
+        .font-handwriting { font-family: 'Pinyon Script', cursive; }
+        .font-display { font-family: 'Staatliches', sans-serif; }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+        
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-slow { animation: pulse-slow 2s infinite; }
+
+        /* Custom Scrollbar for profiles */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        body { background-color: #1e293b; color: #1e293b; } /* Slate-800 equivalent */
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+
+    <!-- APP CONTAINER -->
+    <div id="app" class="max-w-4xl mx-auto"></div>
+
+    <!-- MAIN SCRIPT -->
+    <script>
+        // --- DATA: CASES (Expanded Version) ---
+        const CASE_DATA = [
+            {
+                id: 1,
+                title: "The Museum Heist",
+                icon: "gem", // Lucide icon name
+                difficulty: "Easy",
+                mission: "The 'Star Diamond' was stolen at 23:00. CCTV shows a figure running in the dark. We cannot see their face, but we can see what they are wearing. Use the clues to identify the thief.",
+                suspects: [
+                    { name: "The Guard", icon: "👮‍♂️", details: "Wears: Blue Hat, Keys" },
+                    { name: "The Cleaner", icon: "🧹", details: "Wears: Red Hat, Mop" },
+                    { name: "The Artist", icon: "🎨", details: "Wears: No Hat, Brush" }
+                ],
+                steps: [
+                    {
+                        type: "fill-blanks",
+                        title: "Personnel Files (Routine)",
+                        instruction: "Fill in the Present Simple verbs (what they usually do).",
+                        content: [
+                            { text: "The Guard", answer: "guards", suffix: "the museum. (guard)" },
+                            { text: "The Cleaner", answer: "cleans", suffix: "the dirty floors. (clean)" },
+                            { text: "The Artist", answer: "paints", suffix: "beautiful pictures. (paint)" },
+                            { text: "The Manager", answer: "opens", suffix: "the doors at 9 AM. (open)" },
+                            { text: "Tourists", answer: "visit", suffix: "the exhibit daily. (visit)" }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Alibi Statements",
+                        instruction: "Suspects claim they were doing their normal jobs. Fix the verbs.",
+                        content: [
+                            { text: "The Guard", answer: "watches", suffix: "the door every night. (watch)" },
+                            { text: "The Cleaner", answer: "washes", suffix: "the floors usually. (wash)" },
+                            { text: "The Diamond", answer: "stays", suffix: "in the safe. (stay)" },
+                            { text: "He", answer: "goes", suffix: "home at 5 PM. (go)" },
+                            { text: "She", answer: "studies", suffix: "art history. (study)" }
+                        ]
+                    },
+                    {
+                        type: "sort",
+                        title: "Timeline Sort",
+                        instruction: "Is it a Routine (Habit) or happening Now? Click to toggle.",
+                        content: [
+                            { text: "The Cleaner washes floors.", answer: "ROUTINE" },
+                            { text: "Look! She is running away!", answer: "NOW" },
+                            { text: "The Guard usually checks the lock.", answer: "ROUTINE" },
+                            { text: "He is sleeping in the chair.", answer: "NOW" },
+                            { text: "The alarm is ringing!", answer: "NOW" },
+                            { text: "Museums close at night.", answer: "ROUTINE" },
+                            { text: "Listen! Someone is breaking the glass.", answer: "NOW" },
+                            { text: "Artists paint every day.", answer: "ROUTINE" }
+                        ]
+                    },
+                    {
+                        type: "decrypt",
+                        title: "Clue Decryption",
+                        instruction: "Select the correct grammar to reveal the clue.",
+                        content: [
+                            { 
+                                sentence: "Look! The thief", 
+                                options: [
+                                    { text: "is wearing", valid: true, clue: "RED HAT" },
+                                    { text: "are wearing", valid: false, clue: "BLUE HAT" }
+                                ],
+                                suffix: "a hat."
+                            },
+                            { 
+                                sentence: "The thief", 
+                                options: [
+                                    { text: "has", valid: true, clue: "MOP" },
+                                    { text: "have", valid: false, clue: "BAG" }
+                                ],
+                                suffix: "something heavy."
+                            },
+                            { 
+                                sentence: "The thief", 
+                                options: [
+                                    { text: "run", valid: false, clue: "SLOW" },
+                                    { text: "runs", valid: true, clue: "FAST" }
+                                ],
+                                suffix: "to the door."
+                            },
+                            { 
+                                sentence: "It", 
+                                options: [
+                                    { text: "is", valid: true, clue: "WOMAN" },
+                                    { text: "are", valid: false, clue: "MAN" }
+                                ],
+                                suffix: "a woman!"
+                            },
+                            { 
+                                sentence: "She", 
+                                options: [
+                                    { text: "carry", valid: false, clue: "NOTHING" },
+                                    { text: "carries", valid: true, clue: "KEYS" }
+                                ],
+                                suffix: "a key."
+                            }
+                        ]
+                    },
+                    {
+                        type: "elimination",
+                        title: "Suspect Elimination",
+                        instruction: "Based on the clues (Red Hat, Mop, Fast), who is guilty?",
+                        correctSuspect: "The Cleaner"
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Surveillance Report (Reality)",
+                        instruction: "Describe what they are doing RIGHT NOW.",
+                        content: [
+                            { text: "The Cleaner", answer: "is running", suffix: "towards the exit! (run)" },
+                            { text: "The Guard", answer: "is sleeping", suffix: "in his chair. (sleep)" },
+                            { text: "The alarm", answer: "is ringing", suffix: "loudly! (ring)" },
+                            { text: "The police", answer: "are coming", suffix: "fast! (come)" },
+                            { text: "People", answer: "are shouting", suffix: "for help! (shout)" }
+                        ]
+                    },
+                    {
+                        type: "text-choice",
+                        title: "The Secret Note",
+                        instruction: "We found a note from the thief. Fix the grammar to read the plan.",
+                        content: [
+                            { 
+                                text: "My Plan: I usually", 
+                                options: [{text: "clean", valid: true}, {text: "cleaning", valid: false}], 
+                                suffix: "the floor at 10 PM." 
+                            },
+                            { 
+                                text: "But tonight, I", 
+                                options: [{text: "take", valid: false}, {text: "am taking", valid: true}], 
+                                suffix: "the diamond!" 
+                            },
+                            { 
+                                text: "The Guard always", 
+                                options: [{text: "sleep", valid: false}, {text: "sleeps", valid: true}], 
+                                suffix: "in his chair." 
+                            },
+                            { 
+                                text: "Now I", 
+                                options: [{text: "run", valid: false}, {text: "am running", valid: true}], 
+                                suffix: "to the red car." 
+                            },
+                            { 
+                                text: "My partner", 
+                                options: [{text: "wait", valid: false}, {text: "is waiting", valid: true}], 
+                                suffix: "outside right now." 
+                            }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Lie Detector (Negatives)",
+                        instruction: "The suspect is lying! Correct them.",
+                        content: [
+                            { text: "I", answer: "do not steal", suffix: "the diamond! (not steal)" },
+                            { text: "You", answer: "are not telling", suffix: "the truth right now. (not tell)" },
+                            { text: "The bag", answer: "is not", suffix: "empty. (not be)" },
+                            { text: "We", answer: "do not know", suffix: "the code. (not know)" },
+                            { text: "He", answer: "is not helping", suffix: "me! (not help)" }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Interrogation Room",
+                        instruction: "Ask direct questions. Use: Do / Does / Is / Are",
+                        content: [
+                            { text: "", answer: "do", suffix: "you usually steal art?" },
+                            { text: "", answer: "are", suffix: "you hiding the diamond now?" },
+                            { text: "", answer: "is", suffix: "the police coming?" },
+                            { text: "", answer: "does", suffix: "he have a weapon?" },
+                            { text: "", answer: "are", suffix: "they running away?" }
+                        ]
+                    },
+                    {
+                        type: "code-breaker",
+                        title: "Hidden Location",
+                        instruction: "Solve the grammar to find the hidden letters.",
+                        finalCode: "THE TRASH BIN",
+                        content: [
+                            { 
+                                sentence: "The thief", 
+                                options: [
+                                    { text: "steals", valid: false, code: "T" },
+                                    { text: "is stealing", valid: true, code: "T" }
+                                ],
+                                suffix: "it right now!"
+                            },
+                            { 
+                                sentence: "Guards", 
+                                options: [
+                                    { text: "work", valid: true, code: "H" },
+                                    { text: "works", valid: false, code: "Z" }
+                                ],
+                                suffix: "every day."
+                            },
+                            { 
+                                sentence: "Look! He", 
+                                options: [
+                                    { text: "run", valid: false, code: "K" },
+                                    { text: "is running", valid: true, code: "E" }
+                                ],
+                                suffix: "!"
+                            },
+                            { 
+                                sentence: "BREAK", 
+                                options: [],
+                                suffix: ""
+                            },
+                            { 
+                                sentence: "Where", 
+                                options: [
+                                    { text: "is", valid: true, code: "T" },
+                                    { text: "are", valid: false, code: "Q" }
+                                ],
+                                suffix: "the diamond?"
+                            },
+                            { 
+                                sentence: "I", 
+                                options: [
+                                    { text: "put", valid: false, code: "J" },
+                                    { text: "am putting", valid: true, code: "R" }
+                                ],
+                                suffix: "it here now."
+                            },
+                            { 
+                                sentence: "It", 
+                                options: [
+                                    { text: "is", valid: true, code: "A" },
+                                    { text: "are", valid: false, code: "M" }
+                                ],
+                                suffix: "safe."
+                            },
+                            { 
+                                sentence: "She", 
+                                options: [
+                                    { text: "hides", valid: true, code: "S" },
+                                    { text: "hide", valid: false, code: "P" }
+                                ],
+                                suffix: "it usually."
+                            },
+                            { 
+                                sentence: "He", 
+                                options: [
+                                    { text: "help", valid: false, code: "L" },
+                                    { text: "helps", valid: true, code: "H" }
+                                ],
+                                suffix: "her."
+                            },
+                            { 
+                                sentence: "BREAK", 
+                                options: [],
+                                suffix: ""
+                            },
+                            { 
+                                sentence: "We", 
+                                options: [
+                                    { text: "go", valid: true, code: "B" },
+                                    { text: "goes", valid: false, code: "N" }
+                                ],
+                                suffix: "home."
+                            },
+                            { 
+                                sentence: "Listen! It", 
+                                options: [
+                                    { text: "falling", valid: false, code: "V" },
+                                    { text: "is falling", valid: true, code: "I" }
+                                ],
+                                suffix: "!"
+                            },
+                            { 
+                                sentence: "I", 
+                                options: [
+                                    { text: "know", valid: true, code: "N" },
+                                    { text: "knows", valid: false, code: "X" }
+                                ],
+                                suffix: "the truth."
+                            }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Forensic Lab (Spelling)",
+                        instruction: "Fix the spelling errors in the report.",
+                        content: [
+                            { text: "runing ->", answer: "running", suffix: "" },
+                            { text: "makeing ->", answer: "making", suffix: "" },
+                            { text: "stoping ->", answer: "stopping", suffix: "" },
+                            { text: "takeing ->", answer: "taking", suffix: "" },
+                            { text: "swiming ->", answer: "swimming", suffix: "" }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Evidence Scramble",
+                        instruction: "Unscramble the sentences.",
+                        content: [
+                            { text: "running / she / is / fast", answer: "she is running fast", suffix: "" },
+                            { text: "usually / cleans / she / floors", answer: "she usually cleans floors", suffix: "" },
+                            { text: "stealing / is / he / diamond / the", answer: "he is stealing the diamond", suffix: "" }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Final Report",
+                        instruction: "Complete the summary.",
+                        content: [
+                            { text: "The Cleaner is guilty. She usually", answer: "washes", suffix: "(wash) the floors," },
+                            { text: "but tonight she", answer: "is running", suffix: "(run) away with the diamond!" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "The Bank Hack",
+                icon: "laptop",
+                difficulty: "Medium",
+                mission: "A virus is draining accounts. Three people are in the lobby with laptops. Catch the hacker before the money hits zero.",
+                suspects: [
+                    { name: "The Manager", icon: "🕴️", details: "Suit, Coffee" },
+                    { name: "The Gamer", icon: "👩‍💻", details: "Headphones, Soda" },
+                    { name: "The Customer", icon: "👴", details: "Glasses, Tea" }
+                ],
+                steps: [
+                    {
+                        type: "fill-blanks",
+                        title: "Browser History (Routine)",
+                        instruction: "What do they usually do? (Present Simple)",
+                        content: [
+                            { text: "The Manager", answer: "checks", suffix: "emails daily. (check)" },
+                            { text: "The Gamer", answer: "plays", suffix: "games every day. (play)" },
+                            { text: "The Customer", answer: "reads", suffix: "news often. (read)" },
+                            { text: "Banks", answer: "open", suffix: "at 9 AM. (open)" },
+                            { text: "Hackers", answer: "steal", suffix: "passwords. (steal)" }
+                        ]
+                    },
+                    {
+                        type: "sort",
+                        title: "Timeline Sort",
+                        instruction: "Routine (R) or Now (N)?",
+                        content: [
+                            { text: "The Manager checks emails.", answer: "ROUTINE" },
+                            { text: "He is drinking coffee.", answer: "NOW" },
+                            { text: "She is typing code fast!", answer: "NOW" },
+                            { text: "Hackers steal passwords.", answer: "ROUTINE" },
+                            { text: "The computer is crashing!", answer: "NOW" },
+                            { text: "I use the internet daily.", answer: "ROUTINE" },
+                            { text: "Look! The screen is flashing red.", answer: "NOW" },
+                            { text: "Viruses destroy files.", answer: "ROUTINE" }
+                        ]
+                    },
+                    {
+                        type: "decrypt",
+                        title: "Clue Decryption",
+                        instruction: "Select the correct grammar.",
+                        content: [
+                            { 
+                                sentence: "The Hacker", 
+                                options: [
+                                    { text: "is wearing", valid: true, clue: "HEADPHONES" },
+                                    { text: "are wearing", valid: false, clue: "SUIT" }
+                                ],
+                                suffix: "something on ears."
+                            },
+                            { 
+                                sentence: "The Hacker", 
+                                options: [
+                                    { text: "type", valid: false, clue: "SLOW" },
+                                    { text: "is typing", valid: true, clue: "FAST" }
+                                ],
+                                suffix: "right now."
+                            },
+                            { 
+                                sentence: "The Hacker", 
+                                options: [
+                                    { text: "is drinking", valid: true, clue: "SODA" },
+                                    { text: "drink", valid: false, clue: "TEA" }
+                                ],
+                                suffix: "a green can."
+                            },
+                            { 
+                                sentence: "She", 
+                                options: [
+                                    { text: "sits", valid: true, clue: "CHAIR" },
+                                    { text: "sit", valid: false, clue: "FLOOR" }
+                                ],
+                                suffix: "on a chair."
+                            },
+                            { 
+                                sentence: "Look! She", 
+                                options: [
+                                    { text: "is laughing", valid: true, clue: "EVIL" },
+                                    { text: "laughs", valid: false, clue: "HAPPY" }
+                                ],
+                                suffix: "at the screen."
+                            }
+                        ]
+                    },
+                    {
+                        type: "elimination",
+                        title: "Suspect Elimination",
+                        instruction: "Who matches the clues (Headphones, Soda)?",
+                        correctSuspect: "The Gamer"
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Live Screen Capture (Reality)",
+                        instruction: "What are they doing RIGHT NOW?",
+                        content: [
+                            { text: "The Manager", answer: "is drinking", suffix: "coffee. (drink)" },
+                            { text: "The Gamer", answer: "is typing", suffix: "virus code! (type)" },
+                            { text: "The money", answer: "is disappearing", suffix: "fast! (disappear)" },
+                            { text: "The police", answer: "are tracing", suffix: "the signal. (trace)" },
+                            { text: "The virus", answer: "is spreading", suffix: "everywhere! (spread)" }
+                        ]
+                    },
+                    {
+                        type: "text-choice",
+                        title: "The Hacker's Chat Log",
+                        instruction: "We intercepted a message. Fix the grammar.",
+                        content: [
+                            { 
+                                text: "I usually", 
+                                options: [{text: "play", valid: true}, {text: "playing", valid: false}], 
+                                suffix: "games here." 
+                            },
+                            { 
+                                text: "But now I", 
+                                options: [{text: "take", valid: false}, {text: "am taking", valid: true}], 
+                                suffix: "all the money." 
+                            },
+                            { 
+                                text: "The Manager just", 
+                                options: [{text: "drink", valid: false}, {text: "drinks", valid: true}], 
+                                suffix: "his coffee." 
+                            },
+                            { 
+                                text: "He", 
+                                options: [{text: "don't see", valid: false}, {text: "doesn't see", valid: true}], 
+                                suffix: "me." 
+                            },
+                            { 
+                                text: "I", 
+                                options: [{text: "am winning", valid: true}, {text: "win", valid: false}], 
+                                suffix: "this game right now!" 
+                            }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Denial Analysis (Negatives)",
+                        instruction: "She denies it! Fix the sentences.",
+                        content: [
+                            { text: "I", answer: "do not know", suffix: "the password! (not know)" },
+                            { text: "She", answer: "is not typing", suffix: "an email right now. (not type)" },
+                            { text: "They", answer: "do not hack", suffix: "banks usually. (not hack)" },
+                            { text: "My computer", answer: "is not working", suffix: "today. (not work)" },
+                            { text: "He", answer: "does not use", suffix: "this laptop. (not use)" }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Interrogation",
+                        instruction: "Circle the correct question starter (Do/Does/Is/Are).",
+                        content: [
+                            { text: "", answer: "do", suffix: "you like computers?" },
+                            { text: "", answer: "is", suffix: "she stopping the virus now?" },
+                            { text: "", answer: "are", suffix: "they stealing the files?" },
+                            { text: "", answer: "does", suffix: "it work fast?" },
+                            { text: "", answer: "do", suffix: "we have time?" }
+                        ]
+                    },
+                    {
+                        type: "code-breaker",
+                        title: "Shutdown Sequence",
+                        instruction: "Find the 'Kill Switch' password to stop the virus.",
+                        finalCode: "SYSTEM OFF",
+                        content: [
+                            { 
+                                sentence: "Shh! The baby", 
+                                options: [
+                                    { text: "sleeps", valid: false, code: "X" },
+                                    { text: "is sleeping", valid: true, code: "S" }
+                                ],
+                                suffix: "right now."
+                            },
+                            { 
+                                sentence: "I", 
+                                options: [
+                                    { text: "go", valid: true, code: "Y" },
+                                    { text: "am going", valid: false, code: "G" }
+                                ],
+                                suffix: "to school every day."
+                            },
+                            { 
+                                sentence: "Look! The bus", 
+                                options: [
+                                    { text: "comes", valid: false, code: "P" },
+                                    { text: "is coming", valid: true, code: "S" }
+                                ],
+                                suffix: "!"
+                            },
+                            { 
+                                sentence: "She", 
+                                options: [
+                                    { text: "likes", valid: true, code: "T" },
+                                    { text: "is liking", valid: false, code: "L" }
+                                ],
+                                suffix: "pizza."
+                            },
+                            { 
+                                sentence: "We", 
+                                options: [
+                                    { text: "are eating", valid: true, code: "E" },
+                                    { text: "eat", valid: false, code: "Q" }
+                                ],
+                                suffix: "dinner now."
+                            },
+                            { 
+                                sentence: "He", 
+                                options: [
+                                    { text: "wants", valid: true, code: "M" },
+                                    { text: "want", valid: false, code: "Z" }
+                                ],
+                                suffix: "a new PC."
+                            },
+                            { 
+                                sentence: "BREAK", 
+                                options: [],
+                                suffix: ""
+                            },
+                            { 
+                                sentence: "Listen! It", 
+                                options: [
+                                    { text: "rain", valid: false, code: "K" },
+                                    { text: "is raining", valid: true, code: "O" }
+                                ],
+                                suffix: "outside."
+                            },
+                            { 
+                                sentence: "They", 
+                                options: [
+                                    { text: "study", valid: true, code: "F" },
+                                    { text: "studies", valid: false, code: "B" }
+                                ],
+                                suffix: "English."
+                            },
+                            { 
+                                sentence: "Look! The bird", 
+                                options: [
+                                    { text: "flies", valid: false, code: "J" },
+                                    { text: "is flying", valid: true, code: "F" }
+                                ],
+                                suffix: "!"
+                            }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Forensic Lab (Spelling)",
+                        instruction: "Fix the spelling errors in the code.",
+                        content: [
+                            { text: "writeing ->", answer: "writing", suffix: "" },
+                            { text: "siting ->", answer: "sitting", suffix: "" },
+                            { text: "comming ->", answer: "coming", suffix: "" },
+                            { text: "useing ->", answer: "using", suffix: "" },
+                            { text: "winng ->", answer: "winning", suffix: "" }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Final Report",
+                        instruction: "Close the case.",
+                        content: [
+                            { text: "The Gamer is guilty. She usually", answer: "plays", suffix: "(play) games," },
+                            { text: "but right now she", answer: "is hacking", suffix: "(hack) the bank." }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 3,
+                title: "The Train Robbery",
+                icon: "train",
+                difficulty: "Hard",
+                mission: "A briefcase was thrown off the Midnight Express. Which passenger left their seat at the exact moment?",
+                suspects: [
+                    { name: "Conductor", icon: "👮", details: "Blue Uniform" },
+                    { name: "Chef", icon: "🍳", details: "White Apron" },
+                    { name: "Passenger", icon: "🎩", details: "Grey Suit" }
+                ],
+                steps: [
+                    {
+                        type: "fill-blanks",
+                        title: "Assigned Duties",
+                        instruction: "What are they supposed to do?",
+                        content: [
+                            { text: "The Chef", answer: "cooks", suffix: "lunch every day. (cook)" },
+                            { text: "The Conductor", answer: "checks", suffix: "tickets often. (check)" },
+                            { text: "Trains", answer: "arrive", suffix: "on time usually. (arrive)" },
+                            { text: "Passengers", answer: "sit", suffix: "in their seats. (sit)" },
+                            { text: "The Driver", answer: "drives", suffix: "the train carefully. (drive)" }
+                        ]
+                    },
+                    {
+                        type: "sort",
+                        title: "Timeline Sort",
+                        instruction: "Routine or Now?",
+                        content: [
+                            { text: "The Conductor checks tickets.", answer: "ROUTINE" },
+                            { text: "Look! The bag is falling!", answer: "NOW" },
+                            { text: "The Passenger is jumping!", answer: "NOW" },
+                            { text: "The Chef usually cooks.", answer: "ROUTINE" },
+                            { text: "Trains move fast.", answer: "ROUTINE" },
+                            { text: "Listen! The wind is blowing.", answer: "NOW" },
+                            { text: "He travels every Monday.", answer: "ROUTINE" },
+                            { text: "Someone is screaming!", answer: "NOW" }
+                        ]
+                    },
+                    {
+                        type: "decrypt",
+                        title: "Clue Decryption",
+                        instruction: "Identify the robber.",
+                        content: [
+                            { 
+                                sentence: "The Robber", 
+                                options: [
+                                    { text: "is wearing", valid: true, clue: "GREY SUIT" },
+                                    { text: "are wearing", valid: false, clue: "BLUE UNIFORM" }
+                                ],
+                                suffix: "a suit."
+                            },
+                            { 
+                                sentence: "The Robber", 
+                                options: [
+                                    { text: "is climbing", valid: true, clue: "ROOF" },
+                                    { text: "climb", valid: false, clue: "FLOOR" }
+                                ],
+                                suffix: "the roof."
+                            },
+                            { 
+                                sentence: "The Robber", 
+                                options: [
+                                    { text: "sit", valid: false, clue: "SAFE" },
+                                    { text: "does not sit", valid: true, clue: "DANGEROUS" }
+                                ],
+                                suffix: "in his seat."
+                            },
+                            { 
+                                sentence: "Look! He", 
+                                options: [
+                                    { text: "has", valid: true, clue: "PARACHUTE" },
+                                    { text: "have", valid: false, clue: "BAG" }
+                                ],
+                                suffix: "a parachute!"
+                            },
+                            { 
+                                sentence: "He", 
+                                options: [
+                                    { text: "jump", valid: false, clue: "NO" },
+                                    { text: "jumps", valid: true, clue: "YES" }
+                                ],
+                                suffix: "off the train."
+                            }
+                        ]
+                    },
+                    {
+                        type: "elimination",
+                        title: "Suspect Elimination",
+                        instruction: "Who is the robber (Grey Suit, Roof)?",
+                        correctSuspect: "Passenger"
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Drone Footage (Reality)",
+                        instruction: "A drone is flying outside. What does it see?",
+                        content: [
+                            { text: "The Passenger", answer: "is climbing", suffix: "on the roof! (climb)" },
+                            { text: "The suitcase", answer: "is falling", suffix: "off the train. (fall)" },
+                            { text: "The Police", answer: "are chasing", suffix: "the bad guy! (chase)" },
+                            { text: "The birds", answer: "are flying", suffix: "away. (fly)" },
+                            { text: "The wind", answer: "is blowing", suffix: "hard! (blow)" }
+                        ]
+                    },
+                    {
+                        type: "text-choice",
+                        title: "The Trash Can Note",
+                        instruction: "The Robber tried to destroy this note. Fix the grammar.",
+                        content: [
+                            { 
+                                text: "Boss, I usually", 
+                                options: [{text: "ride", valid: true}, {text: "rides", valid: false}], 
+                                suffix: "this train on Fridays." 
+                            },
+                            { 
+                                text: "Right now, I", 
+                                options: [{text: "hide", valid: false}, {text: "am hiding", valid: true}], 
+                                suffix: "on the roof." 
+                            },
+                            { 
+                                text: "The wind", 
+                                options: [{text: "blow", valid: false}, {text: "is blowing", valid: true}], 
+                                suffix: "very hard!" 
+                            },
+                            { 
+                                text: "I", 
+                                options: [{text: "jump", valid: false}, {text: "am jumping", valid: true}], 
+                                suffix: "in 5 minutes!" 
+                            },
+                            { 
+                                text: "The police", 
+                                options: [{text: "don't know", valid: true}, {text: "doesn't know", valid: false}], 
+                                suffix: "my plan." 
+                            }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Alibi Verification",
+                        instruction: "Correct his lies.",
+                        content: [
+                            { text: "I", answer: "am not climbing", suffix: "the roof now. (not climb)" },
+                            { text: "You", answer: "do not see", suffix: "me there usually. (not see)" },
+                            { text: "The bag", answer: "is not falling", suffix: "off the train. (not fall)" },
+                            { text: "We", answer: "are not stealing", suffix: "anything! (not steal)" },
+                            { text: "The train", answer: "does not stop", suffix: "here. (not stop)" }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Interrogation",
+                        instruction: "Ask him where the suitcase is. (Do/Does/Is/Are)",
+                        content: [
+                            { text: "", answer: "are", suffix: "you hiding the money?" },
+                            { text: "", answer: "does", suffix: "the train stop here?" },
+                            { text: "", answer: "do", suffix: "you jump off?" },
+                            { text: "", answer: "is", suffix: "it dangerous?" },
+                            { text: "", answer: "are", suffix: "we catching him?" }
+                        ]
+                    },
+                    {
+                        type: "code-breaker",
+                        title: "Code Breaker",
+                        instruction: "Find the drop zone location.",
+                        finalCode: "OLD BRIDGE",
+                        content: [
+                            { 
+                                sentence: "The train", 
+                                options: [
+                                    { text: "move", valid: false, code: "X" },
+                                    { text: "moves", valid: true, code: "O" }
+                                ],
+                                suffix: "fast."
+                            },
+                            { 
+                                sentence: "We", 
+                                options: [
+                                    { text: "are stopping", valid: true, code: "L" },
+                                    { text: "stops", valid: false, code: "K" }
+                                ],
+                                suffix: "now."
+                            },
+                            { 
+                                sentence: "It", 
+                                options: [
+                                    { text: "is", valid: true, code: "D" },
+                                    { text: "am", valid: false, code: "O" }
+                                ],
+                                suffix: "a big drop!"
+                            },
+                            { 
+                                sentence: "BREAK", 
+                                options: [],
+                                suffix: ""
+                            },
+                            { 
+                                sentence: "He", 
+                                options: [
+                                    { text: "drop", valid: false, code: "K" },
+                                    { text: "drops", valid: true, code: "B" }
+                                ],
+                                suffix: "the bag."
+                            },
+                            { 
+                                sentence: "Look! It", 
+                                options: [
+                                    { text: "falls", valid: false, code: "P" },
+                                    { text: "is falling", valid: true, code: "R" }
+                                ],
+                                suffix: "!"
+                            },
+                            { 
+                                sentence: "The police", 
+                                options: [
+                                    { text: "catch", valid: true, code: "I" },
+                                    { text: "catches", valid: false, code: "Y" }
+                                ],
+                                suffix: "him."
+                            },
+                            { 
+                                sentence: "The Driver", 
+                                options: [
+                                    { text: "sees", valid: true, code: "D" },
+                                    { text: "see", valid: false, code: "H" }
+                                ],
+                                suffix: "him."
+                            },
+                            { 
+                                sentence: "Passengers", 
+                                options: [
+                                    { text: "get", valid: true, code: "G" },
+                                    { text: "gets", valid: false, code: "Z" }
+                                ],
+                                suffix: "off."
+                            },
+                            { 
+                                sentence: "The end", 
+                                options: [
+                                    { text: "is", valid: true, code: "E" },
+                                    { text: "are", valid: false, code: "Q" }
+                                ],
+                                suffix: "near."
+                            }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Evidence Lab (Spelling)",
+                        instruction: "Fix the suspect's bad spelling.",
+                        content: [
+                            { text: "running vs runing ->", answer: "running", suffix: "" },
+                            { text: "makeing vs making ->", answer: "making", suffix: "" },
+                            { text: "sitting vs siting ->", answer: "sitting", suffix: "" },
+                            { text: "hititing vs hitting ->", answer: "hitting", suffix: "" },
+                            { text: "clozing vs closing ->", answer: "closing", suffix: "" }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Evidence Scramble",
+                        instruction: "Unscramble the words.",
+                        content: [
+                            { text: "train / the / fast / is / moving", answer: "the train is moving fast", suffix: "" },
+                            { text: "jumps / he / usually / never", answer: "he never usually jumps", suffix: "" },
+                            { text: "bag / falling / the / is / down", answer: "the bag is falling down", suffix: "" }
+                        ]
+                    },
+                    {
+                        type: "fill-blanks",
+                        title: "Final Report",
+                        instruction: "File the paperwork.",
+                        content: [
+                            { text: "The Passenger usually", answer: "wears", suffix: "(wear) a suit," },
+                            { text: "but today he", answer: "is wearing", suffix: "(wear) a parachute." }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let state = {
+            agentName: "",
+            currentView: "login", // login, training, cases, activeCase, badges
+            activeCaseId: null,
+            currentStepIndex: 0,
+            answers: {},    // Map of "stepIndex-itemIndex" => value
+            feedback: {},   // Map of "stepIndex-itemIndex" => boolean (correct/incorrect)
+            completedCases: []
+        };
+
+        // --- MAIN RENDER FUNCTION ---
+        const app = document.getElementById('app');
+
+        function render() {
+            // Update Icon Script on every render
+            setTimeout(() => lucide.createIcons(), 50);
+
+            // 1. HEADER (Always visible)
+            let headerHTML = `
+                <div class="bg-slate-900 text-white p-4 shadow-lg border-b-4 border-red-800 sticky top-0 z-50">
+                    <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center">
+                        <div class="flex items-center gap-3 mb-2 md:mb-0">
+                            <i data-lucide="shield" class="text-red-500 w-8 h-8"></i>
+                            <div>
+                                <h1 class="text-2xl font-header leading-none tracking-wider text-red-50">GRAMMAR DETECTIVE</h1>
+                                <p class="text-xs text-slate-400 font-typewriter">TRUE CRIME DIVISION</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4">
+                            ${state.agentName ? `
+                                <div class="flex items-center gap-2 bg-slate-800 px-3 py-1 rounded border border-slate-600">
+                                    <span class="text-xl">🕵️‍♂️</span>
+                                    <span class="font-bold font-display tracking-widest text-lg text-yellow-500">${state.agentName}</span>
+                                    <button onclick="logout()" class="text-xs text-slate-500 hover:text-white ml-2">(Sign Out)</button>
+                                </div>
+                            ` : `
+                                <span class="text-sm text-yellow-500 animate-pulse-slow">Please Sign In Below</span>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 2. MAIN CONTENT
+            let contentHTML = `<div class="p-4 md:p-8">`;
+
+            if (!state.agentName) {
+                contentHTML += renderLogin();
+            } else if (state.currentView === 'training') {
+                contentHTML += renderTraining();
+            } else if (state.currentView === 'cases') {
+                contentHTML += renderCaseList();
+            } else if (state.currentView === 'badges') {
+                contentHTML += renderBadges();
+            } else if (state.currentView === 'activeCase') {
+                contentHTML += renderActiveCase();
+            }
+
+            contentHTML += `</div>`;
+
+            // 3. BOTTOM NAV (If logged in)
+            let navHTML = '';
+            if (state.agentName) {
+                navHTML = `
+                    <div class="fixed bottom-0 left-0 w-full bg-slate-100 border-t-4 border-slate-900 shadow-xl p-2 z-40">
+                        <div class="max-w-4xl mx-auto flex justify-around md:justify-center md:gap-8">
+                            <button onclick="setView('training')" class="flex flex-col items-center p-2 rounded transition-all ${state.currentView === 'training' ? 'text-red-700 bg-red-100 scale-110 font-bold' : 'text-slate-500 hover:text-slate-800'}">
+                                <i data-lucide="file-text" class="w-5 h-5"></i>
+                                <span class="text-xs mt-1 uppercase font-display tracking-wider">Training</span>
+                            </button>
+                            <button onclick="setView('cases')" class="flex flex-col items-center p-2 rounded transition-all ${state.currentView === 'cases' || state.currentView === 'activeCase' ? 'text-red-700 bg-red-100 scale-110 font-bold' : 'text-slate-500 hover:text-slate-800'}">
+                                <i data-lucide="briefcase" class="w-5 h-5"></i>
+                                <span class="text-xs mt-1 uppercase font-display tracking-wider">Cases</span>
+                            </button>
+                            <button onclick="setView('badges')" class="flex flex-col items-center p-2 rounded transition-all ${state.currentView === 'badges' ? 'text-red-700 bg-red-100 scale-110 font-bold' : 'text-slate-500 hover:text-slate-800'}">
+                                <i data-lucide="award" class="w-5 h-5"></i>
+                                <span class="text-xs mt-1 uppercase font-display tracking-wider">Badges</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            app.innerHTML = headerHTML + contentHTML + navHTML;
+        }
+
+        // --- SUB-RENDER FUNCTIONS ---
+
+        function renderLogin() {
+            return `
+                <div class="flex flex-col items-center justify-center min-h-[60vh] text-center text-white">
+                    <div class="bg-slate-900 p-8 rounded-lg shadow-2xl border-4 border-slate-700 max-w-md w-full">
+                        <div class="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-red-700">
+                            <span class="text-5xl">🕵️‍♂️</span>
+                        </div>
+                        <h2 class="text-3xl font-header mb-2 text-red-500">IDENTIFICATION REQUIRED</h2>
+                        <p class="font-typewriter text-sm mb-6 text-slate-300">Enter your Agent Name to access the confidential files.</p>
+                        
+                        <input id="agentNameInput" type="text" placeholder="AGENT NAME..." class="w-full bg-slate-800 border-b-2 border-red-500 text-center text-xl p-3 text-white font-display tracking-widest focus:outline-none focus:border-yellow-400 mb-6 uppercase" onkeydown="if(event.key==='Enter') setAgentName()">
+                        
+                        <button onclick="setAgentName()" class="w-full bg-red-700 hover:bg-red-600 text-white font-header text-xl py-3 px-6 rounded transition-colors shadow-lg">ACCESS FILES</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTraining() {
+            return `
+                <div class="space-y-6 animate-fade-in-up">
+                    <div class="bg-yellow-50 p-6 border-l-8 border-yellow-600 shadow-md transform rotate-1">
+                        <h2 class="text-2xl font-header text-slate-800 mb-4 border-b-2 border-slate-300 pb-2">DETECTIVE TRAINING MANUAL #001</h2>
+                        
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-white p-4 border-2 border-blue-900 rounded relative overflow-hidden">
+                                <div class="absolute top-0 right-0 bg-blue-900 text-white px-2 py-1 text-xs font-bold uppercase">Usually</div>
+                                <h3 class="font-display text-xl text-blue-900 mb-2">THE ROUTINE (Present Simple)</h3>
+                                <p class="text-sm mb-2 font-typewriter">Use for habits, jobs, and facts.</p>
+                                <div class="bg-blue-50 p-2 rounded text-sm font-bold text-center border border-blue-200">
+                                    He/She <span class="text-red-600">WALKS</span> (-s)<br/>
+                                    I/You/We/They <span class="text-red-600">WALK</span>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-4 border-2 border-red-700 rounded relative overflow-hidden">
+                                <div class="absolute top-0 right-0 bg-red-700 text-white px-2 py-1 text-xs font-bold uppercase">Right Now</div>
+                                <h3 class="font-display text-xl text-red-700 mb-2">THE LIVE FEED (Present Continuous)</h3>
+                                <p class="text-sm mb-2 font-typewriter">Use for actions happening NOW.</p>
+                                <div class="bg-red-50 p-2 rounded text-sm font-bold text-center border border-red-200">
+                                    Am/Is/Are + <span class="text-red-600">WALK-ING</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center font-typewriter text-slate-400">
+                        <p>Study this manual. You will need it to solve the crimes.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCaseList() {
+            let html = '<div class="grid md:grid-cols-1 gap-6 animate-fade-in-up">';
+            CASE_DATA.forEach(c => {
+                const isComplete = state.completedCases.includes(c.id);
+                html += `
+                    <div class="bg-white rounded-lg shadow-md border-2 border-slate-700 overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group relative" onclick="openCase(${c.id})">
+                        ${isComplete ? '<div class="absolute top-0 right-0 bg-green-500 text-white p-2 font-bold z-10 font-header">SOLVED</div>' : ''}
+                        <div class="bg-slate-800 p-4 flex justify-between items-center text-white">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="${c.icon}" class="w-8 h-8 group-hover:scale-125 transition-transform text-white"></i>
+                                <div>
+                                    <h3 class="font-header text-xl tracking-wider text-yellow-500">CASE #${c.id}0${c.id}</h3>
+                                    <p class="text-xs text-slate-400 uppercase tracking-widest font-bold">${c.title}</p>
+                                </div>
+                            </div>
+                            <button class="bg-red-700 hover:bg-red-600 text-white px-4 py-1 rounded text-sm font-display tracking-widest">OPEN FILE</button>
+                        </div>
+                        <div class="p-4 bg-slate-50">
+                            <p class="font-typewriter text-sm text-slate-600 mb-4">${c.mission}</p>
+                            <div class="flex justify-end items-center gap-2">
+                                <span class="text-xs font-bold text-slate-400">DIFFICULTY:</span>
+                                <span class="text-xs bg-slate-200 text-slate-800 px-2 py-1 rounded font-bold border border-slate-300 uppercase">${c.difficulty}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function renderBadges() {
+            const isMaster = state.completedCases.length >= 3;
+            
+            let html = `<div class="text-center space-y-8 animate-fade-in-up">
+                <h2 class="text-3xl font-header text-slate-300">DETECTIVE CREDENTIALS</h2>
+                
+                <!-- BADGE CARD -->
+                <div class="max-w-md mx-auto bg-slate-100 rounded-lg overflow-hidden shadow-xl border-2 border-slate-400 flex flex-row h-48">
+                    <div class="w-1/3 bg-slate-800 flex items-center justify-center">
+                        <i data-lucide="shield" class="text-yellow-500 w-20 h-20"></i>
+                    </div>
+                    <div class="w-2/3 p-4 text-left relative">
+                        <h3 class="font-display text-2xl text-red-700 border-b-2 border-slate-300 mb-2">GRAMMAR SQUAD</h3>
+                        <div class="font-typewriter space-y-1 text-sm text-slate-800">
+                            <p><strong>NAME:</strong> ${state.agentName}</p>
+                            <p><strong>RANK:</strong> ${isMaster ? 'Master Detective' : 'Junior Detective'}</p>
+                            <p><strong>ID:</strong> #928-11</p>
+                            <p><strong>CASES:</strong> ${state.completedCases.length} / 3</p>
+                        </div>
+                        <div class="absolute bottom-2 right-4 text-xs text-slate-400 font-bold">OFFICIAL</div>
+                    </div>
+                </div>`;
+
+            if (isMaster) {
+                html += `
+                    <!-- CERTIFICATE -->
+                    <div class="max-w-2xl mx-auto bg-[#fffdf0] p-8 border-8 border-double border-slate-800 shadow-2xl relative mt-8 transform rotate-1 text-slate-800">
+                        <div class="border-2 border-red-800 p-8 flex flex-col items-center">
+                            <h1 class="font-header text-4xl text-slate-800 mb-2">CERTIFICATE OF MASTERY</h1>
+                            <p class="font-handwriting text-3xl text-slate-500 mb-8">Grammar Detective Agency</p>
+                            <p class="font-typewriter mb-4">This certifies that Detective</p>
+                            <p class="font-handwriting text-5xl text-blue-900 border-b-2 border-slate-800 px-8 pb-2 mb-6">${state.agentName}</p>
+                            <p class="font-typewriter mb-8">Has successfully solved all major crimes and is a Master of Present Tenses.</p>
+                            <div class="flex justify-around w-full mt-4">
+                                <div class="text-center">
+                                    <div class="font-handwriting text-2xl">Chief Inspector</div>
+                                    <div class="border-t border-slate-800 w-32 mt-1"></div>
+                                    <div class="text-xs uppercase mt-1">Signature</div>
+                                </div>
+                                <div class="w-24 h-24 rounded-full border-4 border-yellow-600 text-yellow-600 flex items-center justify-center font-display text-xl rotate-12" style="border-style: double;">
+                                    TOP<br/>SECRET
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="bg-slate-200 p-8 rounded-lg border-2 border-dashed border-slate-400 mt-8">
+                        <i data-lucide="lock" class="mx-auto text-slate-400 w-12 h-12 mb-4"></i>
+                        <p class="font-typewriter text-slate-500">Solve all 3 cases to unlock your Master Certificate.</p>
+                    </div>
+                `;
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function renderActiveCase() {
+            const caseItem = CASE_DATA.find(c => c.id === state.activeCaseId);
+            const step = caseItem.steps[state.currentStepIndex];
+            const isLastStep = state.currentStepIndex === caseItem.steps.length - 1;
+
+            // CONFETTI CHECK (Simple check if complete and user just finished)
+            // Note: In vanilla JS without complex confetti lib, we will just show a "Case Closed" screen if isComplete
+            const allStepsDone = state.completedCases.includes(caseItem.id) && isLastStep; // Simplified logic for demo
+
+            if (allStepsDone && Object.keys(state.feedback).filter(k => k.startsWith(state.currentStepIndex)).every(k => state.feedback[k])) {
+                 return `
+                    <div class="text-center py-10 animate-fade-in-up text-white">
+                        <div class="text-6xl mb-4">🎉 🕵️‍♂️ 🎉</div>
+                        <h2 class="text-4xl font-header text-green-500 mb-4">CASE CLOSED!</h2>
+                        <p class="font-typewriter text-xl mb-8">Excellent work, Detective. Justice has been served.</p>
+                        <button onclick="setView('cases')" class="bg-slate-700 text-white font-header text-xl px-8 py-4 rounded shadow-xl hover:scale-105 transition-transform">RETURN TO HQ</button>
+                    </div>
+                 `;
+            }
+
+            let html = `
+                <div>
+                    <button onclick="setView('cases')" class="text-slate-400 hover:text-white mb-4 flex items-center gap-1 font-bold text-sm">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> BACK TO CASES
+                    </button>
+
+                    <!-- Suspects -->
+                    <div class="bg-slate-100 p-4 rounded border border-slate-300 mb-6 overflow-x-auto hide-scrollbar">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-2">SUSPECT PROFILES</p>
+                        <div class="flex gap-4 min-w-max text-slate-800">
+                            ${caseItem.suspects.map(s => `
+                                <div class="flex items-center gap-2 bg-white px-3 py-2 rounded border border-slate-200 shadow-sm">
+                                    <span class="text-2xl">${s.icon}</span>
+                                    <div>
+                                        <div class="font-header text-sm">${s.name}</div>
+                                        <div class="text-xs text-slate-500 font-typewriter">${s.details}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Step Container -->
+                    <div class="bg-white border-2 border-slate-300 p-6 rounded shadow-sm mb-6 animate-fade-in-up text-slate-800">
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-200 pb-2">
+                            <h3 class="font-display text-2xl text-slate-700">${step.title}</h3>
+                            <span class="text-xs bg-slate-200 px-2 py-1 rounded font-typewriter">Step ${state.currentStepIndex + 1} of ${caseItem.steps.length}</span>
+                        </div>
+                        <p class="font-typewriter text-red-600 mb-6 font-bold">${step.instruction}</p>
+                        
+                        <div class="space-y-4">
+                            ${renderStepContent(step)}
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="mt-8 flex justify-between items-center border-t border-slate-200 pt-4">
+                            <button onclick="checkEvidence()" class="bg-slate-800 text-white font-header px-6 py-2 rounded shadow-lg hover:bg-slate-700 transition-colors flex items-center gap-2">
+                                <i data-lucide="search" class="w-4 h-4"></i> CHECK EVIDENCE
+                            </button>
+                            <div class="flex gap-2">
+                                <button onclick="changeStep(-1)" ${state.currentStepIndex === 0 ? 'disabled class="opacity-30"' : ''} class="p-2 text-slate-400 hover:text-slate-800"><i data-lucide="arrow-left"></i></button>
+                                <button onclick="changeStep(1)" ${isLastStep ? 'disabled class="opacity-30"' : ''} class="p-2 text-slate-400 hover:text-slate-800"><i data-lucide="arrow-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return html;
+        }
+
+        function renderStepContent(step) {
+            const idx = state.currentStepIndex;
+            let html = '';
+
+            if (step.type === "fill-blanks") {
+                step.content.forEach((item, i) => {
+                    const key = `${idx}-${i}`;
+                    const val = state.answers[key] || '';
+                    const fb = state.feedback[key];
+                    let borderClass = fb === true ? 'border-green-500 bg-green-50 text-green-700' : (fb === false ? 'border-red-500 bg-red-50 text-red-700' : 'border-slate-800 bg-slate-50');
+                    
+                    html += `
+                        <div class="flex flex-col md:flex-row md:items-center gap-2 font-typewriter text-lg border-b border-dashed border-slate-200 pb-2">
+                            <span>${i + 1}. ${item.text}</span>
+                            <div class="relative inline-block">
+                                <input type="text" value="${val}" oninput="updateAnswer('${key}', this.value, false)" class="border-b-2 px-2 py-1 outline-none w-40 text-center font-handwriting text-2xl ${borderClass}">
+                                ${fb === true ? '<i data-lucide="check-circle" class="absolute right-0 top-2 text-green-500 w-4 h-4"></i>' : ''}
+                                ${fb === false ? '<i data-lucide="x-circle" class="absolute right-0 top-2 text-red-500 w-4 h-4"></i>' : ''}
+                            </div>
+                            <span>${item.suffix}</span>
+                        </div>
+                    `;
+                });
+            } 
+            else if (step.type === "sort") {
+                step.content.forEach((item, i) => {
+                    const key = `${idx}-${i}`;
+                    const val = state.answers[key];
+                    const fb = state.feedback[key];
+                    
+                    html += `
+                        <div class="flex items-center justify-between bg-slate-50 p-3 rounded border border-slate-200">
+                            <span class="font-typewriter flex-grow pr-4">${i + 1}. ${item.text}</span>
+                            <div class="flex gap-2">
+                                ${['ROUTINE', 'NOW'].map(opt => {
+                                    let btnClass = 'bg-white text-slate-500 border-slate-300';
+                                    if (val === opt) {
+                                        if (fb === true && opt === item.answer) btnClass = 'bg-green-600 text-white border-green-600';
+                                        else if (fb === false) btnClass = 'bg-red-600 text-white border-red-600';
+                                        else btnClass = 'bg-slate-700 text-white border-slate-700';
+                                    }
+                                    return `<button onclick="updateAnswer('${key}', '${opt}')" class="px-3 py-1 text-xs font-bold rounded border-2 transition-colors ${btnClass}">${opt}</button>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            else if (step.type === "decrypt") {
+                step.content.forEach((item, i) => {
+                    const key = `${idx}-${i}`;
+                    const val = state.answers[key]; // index of option
+                    const fb = state.feedback[key];
+                    
+                    html += `
+                        <div class="bg-slate-900 text-green-400 p-4 rounded font-typewriter mb-4 shadow-inner">
+                            <p class="mb-2 text-white opacity-50 text-xs">DECRYPTION LINE #${i + 10}</p>
+                            <div class="flex flex-wrap items-center gap-2 text-lg">
+                                <span>${item.sentence}</span>
+                                <div class="flex gap-2 bg-black p-1 rounded">
+                                    ${item.options.map((opt, optIdx) => {
+                                        let btnClass = 'hover:bg-slate-700 text-slate-300';
+                                        if (parseInt(val) === optIdx) {
+                                            if (fb === true) btnClass = 'bg-green-500 text-black font-bold';
+                                            else if (fb === false) btnClass = 'bg-red-500 text-white font-bold';
+                                            else btnClass = 'bg-yellow-500 text-black font-bold';
+                                        }
+                                        return `<button onclick="updateAnswer('${key}', '${optIdx}')" class="px-2 py-0 rounded transition-colors ${btnClass}">${opt.text}</button>`;
+                                    }).join('')}
+                                </div>
+                                <span>${item.suffix}</span>
+                            </div>
+                            ${fb === true ? `<div class="mt-2 text-yellow-400 font-bold border-t border-slate-700 pt-2 animate-pulse">CLUE FOUND: ${item.options[val].clue}</div>` : ''}
+                        </div>
+                    `;
+                });
+            }
+            else if (step.type === "elimination") {
+                const suspects = CASE_DATA.find(c => c.id === state.activeCaseId).suspects;
+                const key = `${idx}-suspect`;
+                const val = state.answers[key];
+                const fb = state.feedback[key];
+
+                html += '<div class="grid grid-cols-1 gap-4">';
+                suspects.forEach(s => {
+                    let containerClass = 'border-slate-200 bg-white hover:border-slate-400';
+                    let statusHTML = '';
+                    
+                    if (val === s.name) {
+                        if (fb === true) {
+                             containerClass = 'border-green-500 bg-green-50 ring-2 ring-green-200';
+                             statusHTML = '<span class="text-green-600 font-display text-xl tracking-widest uppercase ml-auto">GUILTY</span>';
+                        } else if (fb === false) {
+                             containerClass = 'border-red-500 bg-red-50';
+                             statusHTML = '<span class="text-red-600 font-display text-xl tracking-widest uppercase ml-auto">ACCUSED</span>';
+                        } else {
+                             containerClass = 'border-slate-800 bg-slate-100';
+                             statusHTML = '<span class="text-slate-600 font-display text-xl tracking-widest uppercase ml-auto">SELECTED</span>';
+                        }
+                    }
+
+                    html += `
+                        <div onclick="updateAnswer('${key}', '${s.name}')" class="flex items-center p-4 border-2 rounded cursor-pointer transition-all ${containerClass}">
+                            <span class="text-4xl mr-4">${s.icon}</span>
+                            <div>
+                                <h4 class="font-header text-lg">${s.name}</h4>
+                                <p class="text-sm font-typewriter text-slate-500">${s.details}</p>
+                            </div>
+                            ${statusHTML}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            else if (step.type === "text-choice") {
+                html += '<div class="bg-[#fffdf0] border-2 border-dashed border-slate-400 p-6 font-typewriter leading-loose text-lg shadow-sm">';
+                step.content.forEach((item, i) => {
+                    const key = `${idx}-${i}`;
+                    const val = state.answers[key]; // index of option
+                    const fb = state.feedback[key];
+                    
+                    html += `
+                        <span class="mr-2 inline-block">
+                            ${item.text}
+                            <span class="inline-flex gap-1 mx-2 bg-white border border-slate-300 p-1 rounded align-middle">
+                                ${item.options.map((opt, optIdx) => {
+                                    let btnClass = 'bg-slate-200 hover:bg-slate-100';
+                                    if (parseInt(val) === optIdx) {
+                                        if (fb === true) btnClass = 'bg-green-100 text-green-800';
+                                        else if (fb === false) btnClass = 'bg-red-100 text-red-800';
+                                        else btnClass = 'bg-slate-300';
+                                    }
+                                    return `<button onclick="updateAnswer('${key}', '${optIdx}')" class="px-2 py-0 rounded text-sm font-bold transition-colors ${btnClass}">${opt.text}</button>`;
+                                }).join('')}
+                            </span>
+                            ${item.suffix}
+                        </span>
+                    `;
+                });
+                html += '</div>';
+            }
+            else if (step.type === "code-breaker") {
+                html += '<div class="space-y-4">';
+                step.content.forEach((item, i) => {
+                    if (item.sentence === "BREAK") {
+                        html += '<hr class="border-slate-300 my-4">';
+                        return;
+                    }
+                    const key = `${idx}-${i}`;
+                    const val = state.answers[key]; // index of option
+                    const fb = state.feedback[key];
+                    
+                    html += `
+                        <div class="flex flex-wrap items-center gap-2 font-typewriter text-lg border-b border-slate-100 pb-2">
+                            <span>${i + 1}. ${item.sentence}</span>
+                            <div class="flex gap-2">
+                                ${item.options.map((opt, optIdx) => {
+                                    let btnClass = 'bg-slate-700 text-white';
+                                    if (parseInt(val) === optIdx) {
+                                        if (fb === true) btnClass = 'bg-green-600 border-green-600';
+                                        else if (fb === false) btnClass = 'bg-red-600 border-red-600';
+                                    }
+                                    return `<button onclick="updateAnswer('${key}', '${optIdx}')" class="px-2 py-1 border rounded transition-colors text-sm ${btnClass}">${opt.text}</button>`;
+                                }).join('')}
+                            </div>
+                            <span>${item.suffix}</span>
+                        </div>
+                    `;
+                });
+                
+                // Password Grid
+                html += `
+                    <div class="mt-8 bg-black p-4 rounded text-center">
+                        <p class="text-slate-400 text-xs mb-2 tracking-widest uppercase">Decrypted Password</p>
+                        <div class="flex justify-center gap-2 flex-wrap">
+                            ${step.content.filter(x => x.sentence !== "BREAK").map((item, i) => {
+                                const originalIndex = step.content.indexOf(item);
+                                const key = `${idx}-${originalIndex}`;
+                                const val = state.answers[key];
+                                const fb = state.feedback[key];
+                                const letter = (val !== undefined && fb === true) ? item.options[val].code : '?';
+                                return `<div class="w-10 h-14 bg-slate-800 border border-slate-600 flex items-center justify-center text-2xl font-header text-green-500 m-1">${letter}</div>`;
+                            }).join('')}
+                        </div>
+                        ${(step.content.every((item, i) => {
+                             if(item.sentence === "BREAK") return true;
+                             const key = `${idx}-${i}`;
+                             return state.feedback[key] === true;
+                        })) ? `<div class="mt-2 text-green-400 font-bold animate-pulse">ACCESS GRANTED: ${step.finalCode}</div>` : ''}
+                    </div>
+                `;
+                html += '</div>';
+            }
+
+            return html;
+        }
+
+        // --- ACTIONS ---
+
+        function setAgentName() {
+            const input = document.getElementById('agentNameInput');
+            if (input && input.value.trim()) {
+                state.agentName = input.value.trim();
+                setView('training');
+            }
+        }
+
+        function logout() {
+            state.agentName = "";
+            state.completedCases = [];
+            state.answers = {};
+            setView('login');
+        }
+
+        function setView(view) {
+            state.currentView = view;
+            if (view === 'cases') state.activeCaseId = null;
+            render();
+        }
+
+        function openCase(id) {
+            state.activeCaseId = id;
+            state.currentStepIndex = 0;
+            // Clear feedback for new case open usually, but keeping state helps demo
+            // Reset feedback for this case to allow retry? Let's clear feedback only.
+            // state.feedback = {}; 
+            setView('activeCase');
+        }
+
+        function changeStep(delta) {
+            state.currentStepIndex += delta;
+            render();
+        }
+
+        function updateAnswer(key, value, shouldRender = true) {
+            state.answers[key] = value;
+            state.feedback[key] = null; // Reset feedback on change
+            if (shouldRender) render();
+        }
+
+        function checkEvidence() {
+            const caseItem = CASE_DATA.find(c => c.id === state.activeCaseId);
+            const stepIndex = state.currentStepIndex;
+            const step = caseItem.steps[stepIndex];
+            
+            let allCorrect = true;
+
+            if (step.type === "fill-blanks" || step.type === "sort") {
+                step.content.forEach((item, i) => {
+                    const key = `${stepIndex}-${i}`;
+                    const val = state.answers[key] || '';
+                    const isCorrect = val.toLowerCase().trim() === item.answer.toLowerCase();
+                    state.feedback[key] = isCorrect;
+                    if (!isCorrect) allCorrect = false;
+                });
+            } 
+            else if (step.type === "decrypt" || step.type === "code-breaker" || step.type === "text-choice") {
+                step.content.forEach((item, i) => {
+                    if (item.options.length === 0) return;
+                    const key = `${stepIndex}-${i}`;
+                    const val = state.answers[key];
+                    const isCorrect = val !== undefined && item.options[val].valid;
+                    state.feedback[key] = isCorrect;
+                    if (!isCorrect) allCorrect = false;
+                });
+            }
+            else if (step.type === "elimination") {
+                const key = `${stepIndex}-suspect`;
+                const val = state.answers[key];
+                const isCorrect = val === step.correctSuspect;
+                state.feedback[key] = isCorrect;
+                if (!isCorrect) allCorrect = false;
+            }
+
+            if (allCorrect && stepIndex === caseItem.steps.length - 1) {
+                if (!state.completedCases.includes(state.activeCaseId)) {
+                    state.completedCases.push(state.activeCaseId);
+                }
+            }
+
+            render();
+        }
+
+        // Initialize
+        render();
+
+    </script>
+</body>
+</html>
